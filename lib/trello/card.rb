@@ -20,13 +20,10 @@ class Card
   ESTIMATED_REGEX     = /\(([\d.]+)\)/
   SPRINT_NUMBER_REGEX = /\ASprint (\d+)/
 
-  def initialize(board_data, card_id)
-    init_data(board_data, card_id)
-  end
+  def initialize(card_data, settings)
+    @settings  = settings
+    @card_data = card_data
 
-  def init_data(board_data, card_id)
-    @board_data = board_data
-    @card_data = @board_data["cards"].select{|c| c["id"] == card_id}.first
   end
 
   def as_json

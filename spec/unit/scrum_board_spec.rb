@@ -1,20 +1,32 @@
 require_relative 'spec_helper'
 
 describe ScrumBoard do
+
   describe '#done_column' do
+    let(:board_id)   { 'CRdddpdy' }
+    let(:board_url) { "https://api.trello.com/1/boards/#{board_id}?card_checklists=all&cards=open&key=mykey&lists=open&token=mytoken" }
+    let(:board_data) { load_test_file('full-board.json') }
+    let(:settings)   { dummy_settings }
+
+    before(:each) do
+      stub_request(:get, board_url).to_return(status: 200, body: board_data)
+    end
+
+    let(:scrum_board) do
+      ScrumBoard.new(board_id,
+                     settings.developer_public_key,
+                     settings.member_token,
+                     settings)
+    end
+
     it 'raises error when done column cannot be found' do
-      settings = dummy_settings
-
-      board_data = JSON.parse(load_test_file("full-board.json"))
-      scrum_board = ScrumBoard.new(board_data, settings)
-
+      
       settings.done_column_name_regex = /thiscolumndoesntexist/
 
-      expect{scrum_board.done_column}.to raise_error ScrumBoard::DoneColumnNotFoundError
+      expect{scrum_board.done_column}.to raise_error ScrumBoard::ColumnNotFoundError
     end
 
     it 'finds done column with name "Done Sprint %s"' do
-      scrum_board = ScrumBoard.new(nil, dummy_settings)
 
       columns = []
 
@@ -36,7 +48,6 @@ describe ScrumBoard do
     end
 
     it 'finds done column with name "Done Sprint %s" if there are multiple done columns' do
-      scrum_board = ScrumBoard.new(nil, dummy_settings)
 
       columns = []
 
@@ -62,7 +73,6 @@ describe ScrumBoard do
     end
 
     it 'finds done column with name "Done (July 20th - August 3rd)"' do
-      scrum_board = ScrumBoard.new(nil, dummy_settings)
 
       columns = []
 

@@ -15,21 +15,27 @@
 #  To contact SUSE about this file by physical or electronic mail,
 #  you may find current contact information at www.suse.com
 class Column
-  def initialize(board_data, list_id)
-    @board_data = board_data
-    @list_data = @board_data["lists"].select{|l| l["id"] == list_id}.first
+
+  attr_reader :id
+  attr_reader :cards
+
+  def initialize(list, cards, settings)
+    @settings  = settings
+    @list_data = list
+    @id        = list.id
+    @cards     = cards.map {|card| Card.new(card, card.id) }
   end
 
   def name
-    @list_data["name"]
+    @list_data.name
   end
 
   def estimated_cards
-    cards.select{|x| x.estimated? }
+    cards.select(&:estimated?)
   end
 
   def sum
-    estimated_cards.map{|x| x.story_points}.sum
+    estimated_cards.map(&:story_points).sum
   end
 
   def tasks
@@ -41,25 +47,19 @@ class Column
   end
 
   def extra_cards
-    cards.select{|c| c.extra?}
+    cards.select(&:extra?)
   end
 
   def unplanned_cards
-    cards.select{|c| c.unplanned?}
+    cards.select(&:unplanned?)
   end
 
   def committed_cards
-    cards.select{|c| !c.extra? && !c.unplanned?}
+    cards.select {|c| !c.extra? && !c.unplanned? }
   end
 
   def fast_lane_cards
-    cards.select{|c| c.fast_lane?}
+    cards.select(&:fast_lane?)
   end
 
-  def cards
-    return @cards if @cards
-
-    cards = @board_data["cards"].select{|c| c["idList"] == @list_data["id"]}
-    @cards = cards.map{|c| Card.new(@board_data, c["id"])}
-  end
 end

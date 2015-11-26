@@ -33,9 +33,10 @@ class TrelloWrapper
   end
 
   def board(board_id)
-    return @board if @board
-
-    @board = ScrumBoard.new(retrieve_board_data(board_id), @settings)
+    @board ||= ScrumBoard.new(board_id,
+                              @settings.developer_public_key,
+                              @settings.member_token,
+                              @settings)
   end
 
   def retrieve_board_data(board_id)

@@ -56,6 +56,31 @@ class TrelloWrapper
     card.add_attachment(File.open(filename, "rb"))
   end
 
+  def make_cover(card_id, image_name)
+    attachment_id = attachment_id_by_name(card_id, image_name)
+    raise("Error: The attachment with the name '#{image_name}' was not found") if !attachment_id
+    client.put("/cards/#{card_id}/idAttachmentCover?value=#{attachment_id}")
+  end
+
+  def attachment_id_by_name(card_id, image_name)
+    json = JSON.parse(client.get("/cards/#{card_id}/attachments?fields=name"))
+    attachment = json.find{ |e| e["name"] == image_name }
+    if attachment
+      attachment["id"]
+    else
+      nil
+    end
+  end
+
+  def get_description(card_id)
+    card = Trello::Card.find(card_id)
+    card.desc
+  end
+
+  def set_description(card_id, description)
+    client.put("/cards/#{card_id}/desc?value=#{description}")
+  end
+
   private
 
   def init_trello

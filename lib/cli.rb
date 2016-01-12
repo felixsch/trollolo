@@ -169,6 +169,7 @@ EOT
   option :plot, :type => :boolean, :desc => "also plot the new data"
   option 'with-fast-lane', :desc => "Plot Fast Lane with new cards bars", :required => false, :type => :boolean
   option 'no-tasks', :desc => "Do not plot tasks line", :required => false, :type => :boolean
+  option 'push-to-api', :desc => 'Push collected data to api endpoint (in json)', :required => false
   def burndown
     process_global_options options
     require_trello_credentials
@@ -235,6 +236,27 @@ EOT
     puts "Home page: #{o.url}"
   end
 
+  desc "get-description", "Reads description"
+  option "card-id", :desc => "Id of card", :required => true
+  def get_description
+    process_global_options options
+    require_trello_credentials
+
+    trello = TrelloWrapper.new(@@settings)
+
+    puts trello.get_description(options["card-id"])
+  end
+
+  desc "set-description", "Writes description read from standard input"
+  option "card-id", :desc => "Id of card", :required => true
+  def set_description
+    process_global_options options
+    require_trello_credentials
+
+    trello = TrelloWrapper.new(@@settings)
+    trello.set_description(options["card-id"], STDIN.read)
+  end
+
   desc "organization_members", "Show organization members"
   option "org-name", :desc => "Name of organization", :required => true
   def organization_members
@@ -259,6 +281,16 @@ EOT
 
     trello = TrelloWrapper.new(@@settings)
     trello.add_attachment(options["card-id"], filename)
+  end
+
+  desc "make-cover <filename>", "Make existing picture the cover"
+  option "card-id", :desc => "Id of card", :required => true
+  def make_cover(filename)
+    process_global_options(options)
+    require_trello_credentials
+
+    trello = TrelloWrapper.new(@@settings)
+    trello.make_cover(options["card-id"], filename)
   end
 
   private
